@@ -5,6 +5,7 @@ import pandas as pd
 def Crawler(main_link,main_page):
   if main_link and main_page:
     i = 0
+    scrawlled = set()
     Page_count = []
     internal_link_count = []
     external_link_count = []
@@ -20,6 +21,7 @@ def Crawler(main_link,main_page):
           URLFragment_counter = set()
           all_pages = set()
           inter = internal_link.pop()
+          scrawlled.add(inter)
           html = requests.get(main_link+inter).text
           soap_obj = BeautifulSoup(html,'html.parser')
           for links in soap_obj.find_all("a"):
@@ -32,6 +34,8 @@ def Crawler(main_link,main_page):
                           internal_link.add(link)
                       else:
                           internal_counter.add(link)
+                          if link not in scrawlled:
+                              internal_link.add(link)
           if i == 0:
               internal_link_count.append(len(internal_link))
           else:
@@ -61,9 +65,8 @@ def Crawler(main_link,main_page):
           timestamps.append(date_time)
           Page_count.append(i+1)
           i+=1
-      else:
-          dict = {'Pagecount':Page_count,'INTcount':internal_link_count,'EXTcount':external_link_count,'URLfragments':URLFragment_link_count,'timestammp':timestamps}
-          return pd.DataFrame(dict)
-          break
+    dict = {'Pagecount':Page_count,'INTcount':internal_link_count,'EXTcount':external_link_count,'URLfragments':URLFragment_link_count,'timestammp':timestamps}
+    return pd.DataFrame(dict)
+
 Data = Crawler('https://simple.wikipedia.org', '/wiki/Climate_change')
 print(Data)
